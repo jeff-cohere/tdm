@@ -37,13 +37,7 @@ find_package(PETSc REQUIRED)
 
 # General compiler flags.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIE")
-if (APPLE AND CMAKE_BUILD_TYPE STREQUAL Debug)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
-endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIE")
-if (APPLE AND CMAKE_BUILD_TYPE STREQUAL Debug)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
-endif()
 
 # Jigsaw
 set(JIGSAW_DIR ${PROJECT_SOURCE_DIR}/ext/jigsaw)
