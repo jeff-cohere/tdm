@@ -6,7 +6,6 @@
 
 // This struct defines the configuration for our Jigsaw-based mesh generation.
 typedef struct tdm_config_t {
-  char         dem_file[FILENAME_MAX];
   jigsaw_jig_t jigsaw_config;
 } tdm_config_t;
 
@@ -17,14 +16,13 @@ typedef struct tdm_result_t {
   char err_msg[1024]; // error string
 } tdm_result_t;
 
-// Parses command line arguments, using them to initialize a configuration
-// variable.
-tdm_result_t parse_args(int argc, char **argv, tdm_config_t *config);
-
 // Generates a triangulated surface mesh from the given DEM file, storing the
 // surface mesh in the given DM.
 tdm_result_t triangulate_dem(tdm_config_t config,
-                             const char  *dem_file,
+                             size_t       num_points,
+                             real_t       point_elev[num_points],
+                             real_t       point_lat[num_points],
+                             real_t       point_lon[num_points],
                              DM          *surface_mesh);
 
 // Given a surface mesh, this function extrudes each 2D cell to a column of
