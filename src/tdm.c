@@ -1,5 +1,18 @@
 #include "tdm.h"
 
+#include <stdarg.h>
+
+// This function returns a newly created result with the given error code and
+// formatted message.
+tdm_result_t tdm_result(int err_code, const char *fmt, ...) {
+  tdm_result_t result = {.err_code = err_code};
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(result.err_msg, TDM_MAX_ERR_LEN, fmt, ap);
+  va_end(ap);
+  return result;
+}
+
 tdm_result_t triangulate_dem(tdm_config_t config,
                              size_t       num_points,
                              real_t       point_elev[num_points],

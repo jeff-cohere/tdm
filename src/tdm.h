@@ -9,12 +9,19 @@ typedef struct tdm_config_t {
   jigsaw_jig_t jigsaw_config;
 } tdm_config_t;
 
+// This is the maximum length of an error string.
+#define TDM_MAX_ERR_LEN 1024
+
 // This struct holds the result of an operation, including an error code and a
 // related error message.
 typedef struct tdm_result_t {
   int err_code;       // 0 indicates success, nonzero -> failure
-  char err_msg[1024]; // error string
+  char err_msg[TDM_MAX_ERR_LEN]; // error string
 } tdm_result_t;
+
+// Use this one-liner to create a result type with an error code and
+// a string.
+tdm_result_t tdm_result(int err_code, const char *fmt, ...);
 
 // Generates a triangulated surface mesh from the given DEM file, storing the
 // surface mesh in the given DM.

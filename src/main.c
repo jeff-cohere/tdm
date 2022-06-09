@@ -52,7 +52,7 @@ static real_t parse_real_arg(const char *arg, const char *desc) {
 
 void parse_args(int argc, char **argv, tdm_config_t *config,
                 char *elev_file, char *lat_file, char *lon_file) {
-  // Set Jigsaw defaults.
+  // Set Jigsaw defaults. See jigsaw_jig_t.h for details.
   config->jigsaw_config = (jigsaw_jig_t){
     ._verbosity = 0,
     ._geom_seed = 8,
@@ -156,6 +156,13 @@ static tdm_result_t read_point_data(const char  *text_file,
                                     real_t     **data,
                                     size_t      *size) {
   tdm_result_t result = {};
+  FILE *f = fopen(text_file, "r");
+  if (!f) {
+    result = tdm_result(1, "Could not open text file '%s'.", text_file);
+    goto finished;
+  }
+finished:
+  fclose(f);
   return result;
 }
 
