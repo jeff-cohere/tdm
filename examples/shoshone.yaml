@@ -1,50 +1,53 @@
 # This tdm input file demonstrates how to generate an extruded mesh from
 # DEM/lat/lon data with masks indicating the domain to be meshed.
 
-data: # data files
+# data files (dem, lat, lon, mask)
+data:
   dem: DEM.txt
   lat: lat.txt
   lon: lon.txt
   mask: north_fork_shoshone_mask.txt
 
-jigsaw: # jigsaw surface meshing settings (remove leading underscore)
+# jigsaw surface meshing settings (remove leading, trailing underscores)
+jigsaw:
   verbosity: 1
   geom_seed: 8
   geom_feat: 0
-    ._geom_eta1 = 45.0,
-    ._geom_eta2 = 45.0,
-    ._init_near = 1e-8,
-    ._hfun_scal = 0, // FIXME
-    ._hfun_hmax = 0.02,
-    ._hfun_hmin = 0.0,
-    ._bnds_kern = 0, // FIXME
-    ._mesh_dims = 3,
-    ._mesh_kern = 0,
-    ._mesh_iter = INT_MAX,
-    ._mesh_top1 = 0,
-    ._mesh_top2 = 0,
-    ._mesh_rad2 = 1.05,
-    ._mesh_rad3 = 2.05,
-    ._mesh_siz1 = 4.0/3.0 + FLT_MIN,
-    ._mesh_siz2 = 4.0/3.0 + FLT_MIN,
-    ._mesh_siz3 = 4.0/3.0 + FLT_MIN,
-    ._mesh_off2 = 0.90,
-    ._mesh_off3 = 1.10,
-    ._mesh_snk2 = 0.2,
-    ._mesh_snk3 = 0.33,
-    ._mesh_eps1 = 0.33,
-    ._mesh_eps2 = 0.33,
-    ._mesh_vol3 = 0.0,
-    ._optm_kern = 0, // FIXME
-    ._optm_iter = 16,
-    ._optm_qtol = 1e-4,
-    ._optm_qlim = 0.9375,
-    ._optm_tria = 1,
-    ._optm_dual = 0,
-    ._optm_zip_ = 1,
-    ._optm_div_ = 1
+  geom_eta1: 45.0
+  geom_eta2: 45.0
+  init_near: 1e-8
+  hfun_scal: 0
+  hfun_hmax: 0.02
+  hfun_hmin: 0.0
+  bnds_kern: 0
+  mesh_dims: 3
+  mesh_kern: 0
+  mesh_iter: -1 # FIXME
+  mesh_top1: 0
+  mesh_top2: 0
+  mesh_rad2: 1.05
+  mesh_rad3: 2.05
+  mesh_siz1: 4.0/3.0
+  mesh_siz2: 4.0/3.0
+  mesh_siz3: 4.0/3.0
+  mesh_off2: 0.90
+  mesh_off3: 1.10
+  mesh_snk2: 0.2
+  mesh_snk3: 0.33
+  mesh_eps1: 0.33
+  mesh_eps2: 0.33
+  mesh_vol3: 0.0
+  optm_kern: 0 # FIXME
+  optm_iter: 16
+  optm_qtol: 1e-4
+  optm_qlim: 0.9375
+  optm_tria: 1
+  optm_dual: 0
+  optm_zip: 1
+  optm_div: 1
 
-extrusion: # settings for extrusion via DMPlex
+# settings for extrusion via DMPlex
+extrusion:
   layers: 100
   thickness: 100.0 # total thickness
 #  thicknesses: # can also specify per-layer thickness (starting at top)
@@ -52,7 +55,8 @@ extrusion: # settings for extrusion via DMPlex
 #    - 2.0
 #    - ...
 
-output: # mesh output settings
+# mesh output settings
+output:
   surface_mesh:
     format: exodus # can be exodus or hdf5
     filename: surface.exo
