@@ -13,13 +13,13 @@ typedef enum {
 // This struct defines the configuration for our Jigsaw-based mesh generation.
 typedef struct tdm_config_t {
   // input data
-  char dem_file[FILENAME_MAX];
-  char lat_file[FILENAME_MAX];
-  char lon_file[FILENAME_MAX];
-  char mask_file[FILENAME_MAX];
+  const char *dem_file;
+  const char *lat_file;
+  const char *lon_file;
+  const char *mask_file;
 
   // jigsaw surface triangulation settings
-  jigsaw_jig_t jigsaw_config;
+  jigsaw_jig_t jigsaw;
 
   // extrusion parameters
   int     num_layers;
@@ -28,9 +28,9 @@ typedef struct tdm_config_t {
 
   // mesh output settings
   tdm_mesh_format_t surface_mesh_format;
-  char              surface_mesh_file[FILENAME_MAX];
+  const char       *surface_mesh_file;
   tdm_mesh_format_t column_mesh_format;
-  char              column_mesh_file[FILENAME_MAX];
+  const char       *column_mesh_file;
 
 } tdm_config_t;
 

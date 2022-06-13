@@ -4,6 +4,7 @@
 #include <yaml.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 
 // A hash table representing a set of C strings. Used to guarantee that input
 // parameter/setting names are unique.
@@ -61,7 +62,38 @@ static tdm_result_t check_param_name(const char             *block_name,
 static tdm_result_t parse_data_param(parser_state_t *state,
                                      const char     *param,
                                      tdm_config_t   *config) {
+  if (!strcmp(state->current_param, "dem")) {
+    config->dem_file = strdup(param);
+  } else if (!strcmp(state->current_param, "lat")) {
+    config->lat_file = strdup(param);
+  } else if (!strcmp(state->current_param, "lon")) {
+    config->lon_file = strdup(param);
+  } else if (!strcmp(state->current_param, "mask")) {
+    config->mask_file = strdup(param);
+  }
   state->current_param[0] = 0;
+  return (tdm_result_t){0};
+}
+
+// Parses a (32-bit) integer from a string.
+static tdm_result_t parse_int32(const char *str, int32_t *value) {
+  char *endptr;
+  long v = strtol(str, &endptr, 10);
+  if (endptr) {
+    return tdm_result(1, "Invalid integer value: %s", str);
+  }
+  *value = v;
+  return (tdm_result_t){0};
+}
+
+// Parses a real number from a string.
+static tdm_result_t parse_real(const char *str, real_t *value) {
+  char *endptr;
+  double v = strtod(str, &endptr);
+  if (endptr) {
+    return tdm_result(1, "Invalid real value: %s", str);
+  }
+  *value = (real_t)v;
   return (tdm_result_t){0};
 }
 
@@ -69,14 +101,94 @@ static tdm_result_t parse_data_param(parser_state_t *state,
 static tdm_result_t parse_jigsaw_param(parser_state_t *state,
                                        const char     *param,
                                        tdm_config_t   *config) {
+  tdm_result_t result = {};
+  if (!strcmp(state->current_param, "verbosity")) {
+    result = parse_int32(param, &(config->jigsaw._verbosity));
+  } else if (!strcmp(state->current_param, "geom_seed")) {
+    result = parse_int32(param, &(config->jigsaw._geom_seed));
+  } else if (!strcmp(state->current_param, "geom_feat")) {
+    result = parse_int32(param, &(config->jigsaw._geom_feat));
+  } else if (!strcmp(state->current_param, "geom_eta1")) {
+    result = parse_real(param, &(config->jigsaw._geom_eta1));
+  } else if (!strcmp(state->current_param, "geom_eta2")) {
+    result = parse_real(param, &(config->jigsaw._geom_eta2));
+  } else if (!strcmp(state->current_param, "init_near")) {
+    result = parse_real(param, &(config->jigsaw._init_near));
+  } else if (!strcmp(state->current_param, "hfun_scal")) {
+    result = parse_int32(param, &(config->jigsaw._hfun_scal));
+  } else if (!strcmp(state->current_param, "hfun_hmax")) {
+    result = parse_real(param, &(config->jigsaw._hfun_hmax));
+  } else if (!strcmp(state->current_param, "hfun_hmin")) {
+    result = parse_real(param, &(config->jigsaw._hfun_hmin));
+  } else if (!strcmp(state->current_param, "bnds_kern")) {
+    result = parse_int32(param, &(config->jigsaw._bnds_kern));
+  } else if (!strcmp(state->current_param, "mesh_dims")) { // Should be 3
+    result = parse_int32(param, &(config->jigsaw._mesh_dims));
+  } else if (!strcmp(state->current_param, "mesh_kern")) {
+    result = parse_int32(param, &(config->jigsaw._mesh_kern));
+  } else if (!strcmp(state->current_param, "mesh_iter")) {
+    result = parse_int32(param, &(config->jigsaw._mesh_iter));
+  } else if (!strcmp(state->current_param, "mesh_top1")) {
+    result = parse_int32(param, &(config->jigsaw._mesh_top1));
+  } else if (!strcmp(state->current_param, "mesh_top2")) {
+    result = parse_int32(param, &(config->jigsaw._mesh_top2));
+  } else if (!strcmp(state->current_param, "mesh_rad2")) {
+    result = parse_real(param, &(config->jigsaw._mesh_rad2));
+  } else if (!strcmp(state->current_param, "mesh_rad3")) {
+    result = parse_real(param, &(config->jigsaw._mesh_rad3));
+  } else if (!strcmp(state->current_param, "mesh_siz1")) {
+    result = parse_real(param, &(config->jigsaw._mesh_siz1));
+  } else if (!strcmp(state->current_param, "mesh_siz2")) {
+    result = parse_real(param, &(config->jigsaw._mesh_siz2));
+  } else if (!strcmp(state->current_param, "mesh_siz3")) {
+    result = parse_real(param, &(config->jigsaw._mesh_siz3));
+  } else if (!strcmp(state->current_param, "mesh_off2")) {
+    result = parse_real(param, &(config->jigsaw._mesh_off2));
+  } else if (!strcmp(state->current_param, "mesh_off3")) {
+    result = parse_real(param, &(config->jigsaw._mesh_off3));
+  } else if (!strcmp(state->current_param, "mesh_snk2")) {
+    result = parse_real(param, &(config->jigsaw._mesh_snk2));
+  } else if (!strcmp(state->current_param, "mesh_snk3")) {
+    result = parse_real(param, &(config->jigsaw._mesh_snk3));
+  } else if (!strcmp(state->current_param, "mesh_eps1")) {
+    result = parse_real(param, &(config->jigsaw._mesh_eps1));
+  } else if (!strcmp(state->current_param, "mesh_eps2")) {
+    result = parse_real(param, &(config->jigsaw._mesh_eps2));
+  } else if (!strcmp(state->current_param, "mesh_vol3")) {
+    result = parse_real(param, &(config->jigsaw._mesh_vol3));
+  } else if (!strcmp(state->current_param, "optm_kern")) {
+    result = parse_int32(param, &(config->jigsaw._optm_kern));
+  } else if (!strcmp(state->current_param, "optm_iter")) {
+    result = parse_int32(param, &(config->jigsaw._optm_iter));
+  } else if (!strcmp(state->current_param, "optm_qtol")) {
+    result = parse_real(param, &(config->jigsaw._optm_qtol));
+  } else if (!strcmp(state->current_param, "optm_qlim")) {
+    result = parse_real(param, &(config->jigsaw._optm_qlim));
+  } else if (!strcmp(state->current_param, "optm_tria")) {
+    result = parse_int32(param, &(config->jigsaw._optm_tria));
+  } else if (!strcmp(state->current_param, "optm_dual")) {
+    result = parse_int32(param, &(config->jigsaw._optm_dual));
+  } else if (!strcmp(state->current_param, "optm_zip")) {
+    result = parse_int32(param, &(config->jigsaw._optm_zip_));
+  } else if (!strcmp(state->current_param, "optm_div")) {
+    result = parse_int32(param, &(config->jigsaw._optm_div_));
+  }
   state->current_param[0] = 0;
-  return (tdm_result_t){0};
+  return result;
 }
 
 // Parses a parameter in the extrusion block.
 static tdm_result_t parse_extrusion_param(parser_state_t *state,
                                           const char     *param,
                                           tdm_config_t   *config) {
+  if (!strcmp(state->current_param, "layers")) {
+    result = parse_int32(param, &(config->num_layers));
+  } else if (!strcmp(state->current_param, "thickness")) {
+    result = parse_real(param, &(config->total_layer_thickness));
+  } else if (!state->parsing_thicknesses &&
+             !strcmp(state->current_param, "thicknesses")) {
+    state->parsing_thicknesses = true;
+  }
   state->current_param[0] = 0;
   return (tdm_result_t){0};
 }
@@ -85,6 +197,37 @@ static tdm_result_t parse_extrusion_param(parser_state_t *state,
 static tdm_result_t parse_output_param(parser_state_t *state,
                                        const char     *param,
                                        tdm_config_t   *config) {
+  if (!state->parsing_surface_mesh_output &&
+      !strcmp(state->current_param, "surface_mesh")) {
+    state->parsing_surface_mesh_output = true;
+  } else if (!state->parsing_column_mesh_output &&
+             !strcmp(state->current_param, "column_mesh")) {
+    state->parsing_column_mesh_output = true;
+  } else if (state->parsing_surface_mesh_output) {
+    if (!strcmp(state->current_param, "format")) {
+      if (!strcmp(param, "exodus")) {
+        config->surface_mesh_format = TDM_EXODUS;
+      } else if (!strcmp(param, "hdf5")) {
+        config->surface_mesh_format = TDM_HDF5;
+      } else {
+        // FIXME
+      }
+    } else if (!strcmp(state->current_param, "filename")) {
+      config->surface_mesh_file = strdup(param);
+    }
+  } else if (state->parsing_column_mesh_output) {
+    if (!strcmp(state->current_param, "format")) {
+      if (!strcmp(param, "exodus")) {
+        config->column_mesh_format = TDM_EXODUS;
+      } else if (!strcmp(param, "hdf5")) {
+        config->column_mesh_format = TDM_HDF5;
+      } else {
+        // FIXME
+      }
+    } else if (!strcmp(state->current_param, "filename")) {
+      config->column_mesh_file = strdup(param);
+    }
+  }
   return (tdm_result_t){0};
 }
 
