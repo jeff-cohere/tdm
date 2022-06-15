@@ -1,5 +1,7 @@
 #include "tdm.h"
 
+#include <ctype.h>
+#include <float.h>
 #include <stdarg.h>
 
 // This function returns a newly created result with the given error code and
@@ -18,13 +20,67 @@ static tdm_result_t read_point_data(const char  *text_file,
                                     real_t     **data,
                                     size_t      *size) {
   tdm_result_t result = {};
+  char *buffer = NULL;
+  *data = NULL;
+  *size = 0;
+
   FILE *f = fopen(text_file, "r");
   if (!f) {
     result = tdm_result(1, "Could not open text file '%s'.", text_file);
     goto finished;
   }
+
+  // Read the file's contents into memory.
+  fseek(f, 0, SEEK_END);
+  size_t file_size = (size_t)ftell(f);
+  rewind(f);
+  buffer = malloc(sizeof(char) * file_size);
+  fread(buffer, sizeof(char), file_size, f);
+
+  // The file contains a bunch of numbers separated by whitespace. We read these
+  // numbers into an array, dynamically resizing it as needed.
+
+  // Line up the first number.
+  size_t offset = 0;
+  while (!isdigit(buffer[offset]) && offset < file_size) ++offset;
+  if (offset == file_size) {
+    result = tdm_result(1, "No numeric data found in '%s'!", text_file);
+    goto finished;
+  }
+
+  // Allocate (preliminary) storage.
+  size_t n = 0, cap = 1024;
+  real_t *array = malloc(sizeof(real_t) * cap);
+
+  // Read numbers till the end.
+  while (offset < file_size) {
+    char *endptr;
+    real_t datum = strtod(&buffer[offset], &endptr);
+    if (endptr) {
+      if (!isspace(endptr[0])) { // whitespace is fine--go to next number
+        array[n] = datum;
+        ++n;
+        if (n >= cap) { // resize if needed
+          while (cap <= n) cap *= 2;
+          array = realloc(array, sizeof(real_t) * cap);
+        }
+        offset += (endptr - &buffer[offset]);
+        while (isspace(buffer[offset])) ++offset;
+      } else {
+        result = tdm_result(1, "Invalid numeric data found at byte %zd of '%s'!",
+                            offset, text_file);
+        free(array);
+        goto finished;
+      }
+    }
+  }
+
+  // Hand off the data.
+  *data = array;
+  *size = n;
 finished:
-  fclose(f);
+  if (buffer) free(buffer);
+  if (f) fclose(f);
   return result;
 }
 
@@ -33,10 +89,8 @@ tdm_result_t extract_points(tdm_config_t config,
                             point_t    **points) {
   tdm_result_t result = {};
 
-  // Read the DEM point data from the specified files.
-
   // Read point elevation, latitude, longitude data and transform it to 3D
-  // cartesian coordinates.
+  // cartesian coordinates on a plane.
   real_t *elev_data = NULL, *lat_data = NULL, *lon_data = NULL,
          *mask_data = NULL;
   size_t n, n1;
@@ -67,11 +121,41 @@ tdm_result_t extract_points(tdm_config_t config,
   }
   if (result.err_code) goto finished;
 
-  // Transform the point data to cartesian coordinates.
+  // Transform the point data to cartesian coordinates above the x-y plane.
+  // Here, we use x to indicate displacements between longitudes, and y for
+  // displacements between latitudes.
+
+  // First, scan the data to find min/max lat/lon values so we can tell where
+  // we are on the earth.
+  real_t min_lat = FLT_MAX, max_lat = -FLT_MAX,
+         min_lon = FLT_MAX, max_lon = -FLT_MAX;
+  for (size_t i = 0; i < n; ++i) {
+    if (min_lat > lat_data[i]) min_lat = lat_data[i];
+    if (max_lat < lat_data[i]) max_lat = lat_data[i];
+    if (min_lon > lat_data[i]) min_lon = lat_data[i];
+    if (max_lon < lat_data[i]) max_lon = lat_data[i];
+  }
+
+  // Now we assume that the data covers a portion of the earth that is small
+  // enough to assume zero curvature, and we use the center-point latitude and
+  // longitude to estimate distances.
+  // WARNING: This calculation doesn't work when you're near the poles (but
+  // WARNING: then, using lat/lon coordinates near the poles is foolish, no?).
+  real_t med_lat = 0.5 * (min_lat + max_lat);
+  real_t med_lon = 0.5 * (min_lon + max_lon);
+  // Compute x (easterly) and y (northerly) coordinates at this point.
+  real_t x0 = 0.0; // FIXME
+  real_t y0 = 0.0; // FIXME
+
+  // Compute dx (easterly distance between longitudes) at this point.
+  real_t dx = 1.0; // FIXME
+  // Compute dy (northerly distance between latitudes) at this point.
+  real_t dy = 1.0; // FIXME
+
   *num_points = n;
   *points = malloc(sizeof(point_t) * n);
   for (size_t i = 0; i < n; ++i) {
-    // FIXME: What projection do we want to use here?
+    // FIXME
   }
 
 finished:
@@ -101,11 +185,7 @@ tdm_result_t triangulate_dem(tdm_config_t config,
     // Run jigsaw to generate a triangulated mesh.
     jigsaw_msh_t trimesh;
     // FIXME: Can we check errors?
-    jigsaw(&config.jigsaw_config,
-           &geom,
-           NULL,
-           NULL,
-           &trimesh);
+    jigsaw(&config.jigsaw, &geom, NULL, NULL, &trimesh);
 
     if (!result.err_code) {
       // Create a 2D DMPlex from the triangulated mesh.

@@ -20,6 +20,7 @@ typedef struct parser_state_t {
 
   bool parsing_extrusion;
   bool parsing_thicknesses;
+  int  current_layer;
   khash_t(yaml_name_set) *extrusion_param_names;
 
   bool parsing_output;
@@ -102,75 +103,77 @@ static tdm_result_t parse_jigsaw_param(parser_state_t *state,
                                        const char     *param,
                                        tdm_config_t   *config) {
   tdm_result_t result = {};
-  if (!strcmp(state->current_param, "verbosity")) {
+
+  // These arguments are case-insensitive.
+  if (!strcasecmp(state->current_param, "verbosity")) {
     result = parse_int32(param, &(config->jigsaw._verbosity));
-  } else if (!strcmp(state->current_param, "geom_seed")) {
+  } else if (!strcasecmp(state->current_param, "geom_seed")) {
     result = parse_int32(param, &(config->jigsaw._geom_seed));
-  } else if (!strcmp(state->current_param, "geom_feat")) {
+  } else if (!strcasecmp(state->current_param, "geom_feat")) {
     result = parse_int32(param, &(config->jigsaw._geom_feat));
-  } else if (!strcmp(state->current_param, "geom_eta1")) {
+  } else if (!strcasecmp(state->current_param, "geom_eta1")) {
     result = parse_real(param, &(config->jigsaw._geom_eta1));
-  } else if (!strcmp(state->current_param, "geom_eta2")) {
+  } else if (!strcasecmp(state->current_param, "geom_eta2")) {
     result = parse_real(param, &(config->jigsaw._geom_eta2));
-  } else if (!strcmp(state->current_param, "init_near")) {
+  } else if (!strcasecmp(state->current_param, "init_near")) {
     result = parse_real(param, &(config->jigsaw._init_near));
-  } else if (!strcmp(state->current_param, "hfun_scal")) {
+  } else if (!strcasecmp(state->current_param, "hfun_scal")) {
     result = parse_int32(param, &(config->jigsaw._hfun_scal));
-  } else if (!strcmp(state->current_param, "hfun_hmax")) {
+  } else if (!strcasecmp(state->current_param, "hfun_hmax")) {
     result = parse_real(param, &(config->jigsaw._hfun_hmax));
-  } else if (!strcmp(state->current_param, "hfun_hmin")) {
+  } else if (!strcasecmp(state->current_param, "hfun_hmin")) {
     result = parse_real(param, &(config->jigsaw._hfun_hmin));
-  } else if (!strcmp(state->current_param, "bnds_kern")) {
+  } else if (!strcasecmp(state->current_param, "bnds_kern")) {
     result = parse_int32(param, &(config->jigsaw._bnds_kern));
-  } else if (!strcmp(state->current_param, "mesh_dims")) { // Should be 3
+  } else if (!strcasecmp(state->current_param, "mesh_dims")) { // Should be 3
     result = parse_int32(param, &(config->jigsaw._mesh_dims));
-  } else if (!strcmp(state->current_param, "mesh_kern")) {
+  } else if (!strcasecmp(state->current_param, "mesh_kern")) {
     result = parse_int32(param, &(config->jigsaw._mesh_kern));
-  } else if (!strcmp(state->current_param, "mesh_iter")) {
+  } else if (!strcasecmp(state->current_param, "mesh_iter")) {
     result = parse_int32(param, &(config->jigsaw._mesh_iter));
-  } else if (!strcmp(state->current_param, "mesh_top1")) {
+  } else if (!strcasecmp(state->current_param, "mesh_top1")) {
     result = parse_int32(param, &(config->jigsaw._mesh_top1));
-  } else if (!strcmp(state->current_param, "mesh_top2")) {
+  } else if (!strcasecmp(state->current_param, "mesh_top2")) {
     result = parse_int32(param, &(config->jigsaw._mesh_top2));
-  } else if (!strcmp(state->current_param, "mesh_rad2")) {
+  } else if (!strcasecmp(state->current_param, "mesh_rad2")) {
     result = parse_real(param, &(config->jigsaw._mesh_rad2));
-  } else if (!strcmp(state->current_param, "mesh_rad3")) {
+  } else if (!strcasecmp(state->current_param, "mesh_rad3")) {
     result = parse_real(param, &(config->jigsaw._mesh_rad3));
-  } else if (!strcmp(state->current_param, "mesh_siz1")) {
+  } else if (!strcasecmp(state->current_param, "mesh_siz1")) {
     result = parse_real(param, &(config->jigsaw._mesh_siz1));
-  } else if (!strcmp(state->current_param, "mesh_siz2")) {
+  } else if (!strcasecmp(state->current_param, "mesh_siz2")) {
     result = parse_real(param, &(config->jigsaw._mesh_siz2));
-  } else if (!strcmp(state->current_param, "mesh_siz3")) {
+  } else if (!strcasecmp(state->current_param, "mesh_siz3")) {
     result = parse_real(param, &(config->jigsaw._mesh_siz3));
-  } else if (!strcmp(state->current_param, "mesh_off2")) {
+  } else if (!strcasecmp(state->current_param, "mesh_off2")) {
     result = parse_real(param, &(config->jigsaw._mesh_off2));
-  } else if (!strcmp(state->current_param, "mesh_off3")) {
+  } else if (!strcasecmp(state->current_param, "mesh_off3")) {
     result = parse_real(param, &(config->jigsaw._mesh_off3));
-  } else if (!strcmp(state->current_param, "mesh_snk2")) {
+  } else if (!strcasecmp(state->current_param, "mesh_snk2")) {
     result = parse_real(param, &(config->jigsaw._mesh_snk2));
-  } else if (!strcmp(state->current_param, "mesh_snk3")) {
+  } else if (!strcasecmp(state->current_param, "mesh_snk3")) {
     result = parse_real(param, &(config->jigsaw._mesh_snk3));
-  } else if (!strcmp(state->current_param, "mesh_eps1")) {
+  } else if (!strcasecmp(state->current_param, "mesh_eps1")) {
     result = parse_real(param, &(config->jigsaw._mesh_eps1));
-  } else if (!strcmp(state->current_param, "mesh_eps2")) {
+  } else if (!strcasecmp(state->current_param, "mesh_eps2")) {
     result = parse_real(param, &(config->jigsaw._mesh_eps2));
-  } else if (!strcmp(state->current_param, "mesh_vol3")) {
+  } else if (!strcasecmp(state->current_param, "mesh_vol3")) {
     result = parse_real(param, &(config->jigsaw._mesh_vol3));
-  } else if (!strcmp(state->current_param, "optm_kern")) {
+  } else if (!strcasecmp(state->current_param, "optm_kern")) {
     result = parse_int32(param, &(config->jigsaw._optm_kern));
-  } else if (!strcmp(state->current_param, "optm_iter")) {
+  } else if (!strcasecmp(state->current_param, "optm_iter")) {
     result = parse_int32(param, &(config->jigsaw._optm_iter));
-  } else if (!strcmp(state->current_param, "optm_qtol")) {
+  } else if (!strcasecmp(state->current_param, "optm_qtol")) {
     result = parse_real(param, &(config->jigsaw._optm_qtol));
-  } else if (!strcmp(state->current_param, "optm_qlim")) {
+  } else if (!strcasecmp(state->current_param, "optm_qlim")) {
     result = parse_real(param, &(config->jigsaw._optm_qlim));
-  } else if (!strcmp(state->current_param, "optm_tria")) {
+  } else if (!strcasecmp(state->current_param, "optm_tria")) {
     result = parse_int32(param, &(config->jigsaw._optm_tria));
-  } else if (!strcmp(state->current_param, "optm_dual")) {
+  } else if (!strcasecmp(state->current_param, "optm_dual")) {
     result = parse_int32(param, &(config->jigsaw._optm_dual));
-  } else if (!strcmp(state->current_param, "optm_zip")) {
+  } else if (!strcasecmp(state->current_param, "optm_zip")) {
     result = parse_int32(param, &(config->jigsaw._optm_zip_));
-  } else if (!strcmp(state->current_param, "optm_div")) {
+  } else if (!strcasecmp(state->current_param, "optm_div")) {
     result = parse_int32(param, &(config->jigsaw._optm_div_));
   }
   state->current_param[0] = 0;
@@ -181,22 +184,42 @@ static tdm_result_t parse_jigsaw_param(parser_state_t *state,
 static tdm_result_t parse_extrusion_param(parser_state_t *state,
                                           const char     *param,
                                           tdm_config_t   *config) {
-  if (!strcmp(state->current_param, "layers")) {
-    result = parse_int32(param, &(config->num_layers));
-  } else if (!strcmp(state->current_param, "thickness")) {
-    result = parse_real(param, &(config->total_layer_thickness));
-  } else if (!state->parsing_thicknesses &&
-             !strcmp(state->current_param, "thicknesses")) {
-    state->parsing_thicknesses = true;
+  tdm_result_t result = {};
+
+  if (state->parsing_thicknesses) {
+    if (!config->layer_thicknesses) {
+      if (config->num_layers <= 0) {
+        result = tdm_result(1, "layers must be specified before thicknesses!");
+      } else {
+        config->layer_thicknesses = malloc(sizeof(real_t) * config->num_layers);
+        state->current_layer = 0;
+      }
+    }
+    if (!result.err_code) {
+      if (state->current_layer == config->num_layers) {
+        result = tdm_result(1, "too many layer thicknesses specified!");
+      } else {
+        result = parse_real(param, &(config->layer_thicknesses[state->current_layer]));
+        ++state->current_layer;
+      }
+    }
+  } else {
+    if (!strcmp(state->current_param, "layers")) {
+      result = parse_int32(param, &(config->num_layers));
+    } else if (!strcmp(state->current_param, "thickness")) {
+      result = parse_real(param, &(config->total_layer_thickness));
+    }
+    state->current_param[0] = 0;
   }
-  state->current_param[0] = 0;
-  return (tdm_result_t){0};
+  return result;
 }
 
 // Parses a parameter in the output block.
 static tdm_result_t parse_output_param(parser_state_t *state,
                                        const char     *param,
                                        tdm_config_t   *config) {
+  tdm_result_t result = {};
+
   if (!state->parsing_surface_mesh_output &&
       !strcmp(state->current_param, "surface_mesh")) {
     state->parsing_surface_mesh_output = true;
@@ -210,7 +233,7 @@ static tdm_result_t parse_output_param(parser_state_t *state,
       } else if (!strcmp(param, "hdf5")) {
         config->surface_mesh_format = TDM_HDF5;
       } else {
-        // FIXME
+        result = tdm_result(1, "Invalid surface mesh format: %s", param);
       }
     } else if (!strcmp(state->current_param, "filename")) {
       config->surface_mesh_file = strdup(param);
@@ -222,13 +245,13 @@ static tdm_result_t parse_output_param(parser_state_t *state,
       } else if (!strcmp(param, "hdf5")) {
         config->column_mesh_format = TDM_HDF5;
       } else {
-        // FIXME
+        result = tdm_result(1, "Invalid column mesh format: %s", param);
       }
     } else if (!strcmp(state->current_param, "filename")) {
       config->column_mesh_file = strdup(param);
     }
   }
-  return (tdm_result_t){0};
+  return result;
 }
 
 // Handles a YAML event, populating our config.
@@ -297,13 +320,12 @@ static tdm_result_t handle_yaml_event(yaml_event_t   *event,
     state->parsing_output = false;
     state->current_param[0] = 0;
   } else if (event->type == YAML_SEQUENCE_START_EVENT) {
-    if (state->parsing_data) {
+    if (state->parsing_extrusion && !state->parsing_thicknesses) {
+      state->parsing_thicknesses = true;
+    } else if (state->parsing_data) {
       return tdm_result(1, "Encountered illegal array value in data block.");
     } else if (state->parsing_jigsaw) {
       return tdm_result(1, "Encountered illegal array value in jigsaw block.");
-    } else if (state->parsing_extrusion && !state->parsing_thicknesses &&
-               !strcmp(state->current_param, "thicknesses")) {
-      state->parsing_thicknesses = true;
     } else if (state->parsing_output) {
       return tdm_result(1, "Encountered illegal array value in output block.");
     }

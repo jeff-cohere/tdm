@@ -10,12 +10,6 @@ set(CMAKE_CXX_STANDARD 17) # needed by Jigsaw
 
 project (tdm VERSION 0.1.0)
 
-message(STATUS "Generating project files in build directory: ${PROJECT_BINARY_DIR}")
-message(STATUS "C compiler is ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION})")
-message(STATUS "C++ compiler is ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
-message(STATUS "Configuring tdymesher (tdm) v${CMAKE_PROJECT_VERSION}")
-message(STATUS "Installation prefix is ${CMAKE_INSTALL_PREFIX}")
-
 # We jam everything into the executable.
 set(BUILD_SHARED_LIBS OFF)
 
@@ -34,6 +28,14 @@ else()
   message(FATAL_ERROR "PETSC_ARCH env var is undefined! Please set it to PETSc's architecture.")
 endif()
 find_package(PETSc REQUIRED)
+
+# Compilers
+set(CMAKE_C_COMPILER ${PETSC_COMPILER})
+message(STATUS "Generating project files in build directory: ${PROJECT_BINARY_DIR}")
+message(STATUS "C compiler is ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION})")
+message(STATUS "C++ compiler is ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
+message(STATUS "Configuring tdymesher (tdm) v${CMAKE_PROJECT_VERSION}")
+message(STATUS "Installation prefix is ${CMAKE_INSTALL_PREFIX}")
 
 # General compiler flags.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIE")
