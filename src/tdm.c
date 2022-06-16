@@ -138,24 +138,37 @@ tdm_result_t extract_points(tdm_config_t config,
 
   // Now we assume that the data covers a portion of the earth that is small
   // enough to assume zero curvature, and we use the center-point latitude and
-  // longitude to estimate distances.
+  // longitude to estimate distances using North-East-Up (NEU) coordinates fit
+  // to a tangent plane at a "median" latitude and longitude.
   // WARNING: This calculation doesn't work when you're near the poles (but
   // WARNING: then, using lat/lon coordinates near the poles is foolish, no?).
   real_t med_lat = 0.5 * (min_lat + max_lat);
   real_t med_lon = 0.5 * (min_lon + max_lon);
-  // Compute x (easterly) and y (northerly) coordinates at this point.
-  real_t x0 = 0.0; // FIXME
-  real_t y0 = 0.0; // FIXME
 
-  // Compute dx (easterly distance between longitudes) at this point.
-  real_t dx = 1.0; // FIXME
-  // Compute dy (northerly distance between latitudes) at this point.
-  real_t dy = 1.0; // FIXME
+  // Compute differential coordinate spacings dx_dlat (easterly distance between
+  // longitudes per degree latitude) and dy_dlon (northerly distance between
+  // latitudes) at this point using the WGS84 spheroid approximation
+  // (https://en.wikipedia.org/wiki/Geographic_coordinate_system#Length_of_a_degree).
+  real_t dx_dlon = 111412.84 * cos(med_lat) - 93.5 * cos(3*med_lat) +
+                   0.118 * cos(5*med_lat);
+  real_t dy_dlat = 111132.92 - 559.82 * cos(2.0*med_lat) +
+                   1.175 * cos(4*med_lat) - 0.0023 * cos(6*med_lat);
 
   *num_points = n;
   *points = malloc(sizeof(point_t) * n);
   for (size_t i = 0; i < n; ++i) {
-    // FIXME
+    // The origin of our NEU coordinate system is at the median point we
+    // computed above. Because we're on a tangent plane, we can compute
+    // distances by multiplying displacements in latitude/longitude by the
+    // differential coordinate spacings.
+    real_t dlon = lon_data[i] - med_lon;
+    real_t dlat = lat_data[i] - med_lat;
+    point_t p = {
+      .x = dx_dlon * dlon,
+      .y = dy_dlat * dlat,
+      .z = elev_data[i]
+    };
+    (*points)[i] = p;
   }
 
 finished:
